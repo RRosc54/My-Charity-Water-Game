@@ -16,9 +16,12 @@
     <header class="top-bar">
       <h1>Water Collector</h1>
 
-      <div class="brand">
-        <span class="jerry-icon">▣</span>
-        <span>charity: water</span>
+      <div class="brand" aria-label="charity water logo">
+        <img
+          src="img/charity-water-logo.png"
+          alt="charity: water logo"
+          class="brand-logo"
+        />
       </div>
     </header>
 
@@ -52,8 +55,17 @@
 
     <!-- Message Area -->
     <p id="message" class="message">
-      Fill every square, then reach the bucket!
+      Every move helps deliver clean water. Fill every square, then reach the yellow jerry can!
     </p>
+
+    <!-- Mission Card -->
+    <section class="mission-card">
+      <span class="mission-icon">💧</span>
+
+      <p>
+        Guide the water across the community. Reach the yellow jerry can only after every square has clean water.
+      </p>
+    </section>
 
     <!-- Game Board Area -->
     <section class="game-area">
@@ -61,21 +73,20 @@
     </section>
 
     <!-- Mobile Controls -->
-    <section class="controls">
-      <button id="upBtn">↑</button>
+    <section class="controls" aria-label="Game movement controls">
+      <button id="upBtn" type="button" aria-label="Move up">↑</button>
 
       <div class="middle-controls">
-        <button id="leftBtn">←</button>
-        <button id="downBtn">↓</button>
-        <button id="rightBtn">→</button>
+        <button id="leftBtn" type="button" aria-label="Move left">←</button>
+        <button id="downBtn" type="button" aria-label="Move down">↓</button>
+        <button id="rightBtn" type="button" aria-label="Move right">→</button>
       </div>
     </section>
 
     <!-- Game Buttons -->
     <section class="game-buttons">
-      <button id="startBtn">Start Game</button>
-      <button id="resetBtn">Reset</button>
-      <button id="nextBtn">Next Level</button>
+      <button id="startBtn" type="button">Start Game</button>
+      <button id="resetBtn" type="button">Reset</button>
     </section>
 
   </main>

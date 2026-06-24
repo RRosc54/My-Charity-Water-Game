@@ -10,7 +10,6 @@ const message = document.getElementById("message");
 
 const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
-const nextBtn = document.getElementById("nextBtn");
 
 const upBtn = document.getElementById("upBtn");
 const downBtn = document.getElementById("downBtn");
@@ -18,6 +17,9 @@ const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 
 const celebration = document.getElementById("celebration");
+
+// Image path for final yellow jerry can
+const JERRY_CAN_PATH = "img/jerry-can-icon.png";
 
 // Game state
 let level = 1;
@@ -27,6 +29,7 @@ let lives = 3;
 let timeLeft = 30;
 let timer = null;
 let gameActive = false;
+let changingLevel = false;
 
 let rows = 5;
 let cols = 5;
@@ -37,13 +40,12 @@ let bucketPosition = { row: 4, col: 4 };
 let blockedCells = [];
 let filledCells = [];
 
-// Create random level
+// Create a new level
 function createLevel() {
   rows = 5;
   cols = 5;
 
-  // Timer gets slightly harder each level, but not too hard
-  timeLeft = Math.max(15, 32 - level * 2);
+  timeLeft = Math.max(18, 34 - level * 2);
 
   playerPosition = {
     row: 0,
@@ -58,33 +60,176 @@ function createLevel() {
   blockedCells = [];
   filledCells = [];
 
-  // Start square counts as filled
   filledCells.push(positionKey(playerPosition.row, playerPosition.col));
 
   generateRandomBlocks();
+
   updateDisplay();
   drawBoard();
 
-  message.textContent = "Fill every square, then reach the bucket!";
+  message.textContent =
+    "Every move helps deliver clean water. Fill every square, then reach the yellow jerry can!";
 }
 
-// Random obstacle generation
+// Random obstacle generation that only accepts solvable levels
 function generateRandomBlocks() {
   const numberOfBlocks = Math.min(2 + level, 6);
+  let attempts = 0;
+  let validLevelFound = false;
 
-  while (blockedCells.length < numberOfBlocks) {
-    const randomRow = Math.floor(Math.random() * rows);
-    const randomCol = Math.floor(Math.random() * cols);
+  while (!validLevelFound && attempts < 500) {
+    blockedCells = [];
 
-    const key = positionKey(randomRow, randomCol);
+    while (blockedCells.length < numberOfBlocks) {
+      const randomRow = Math.floor(Math.random() * rows);
+      const randomCol = Math.floor(Math.random() * cols);
 
-    const isStart = randomRow === playerPosition.row && randomCol === playerPosition.col;
-    const isBucket = randomRow === bucketPosition.row && randomCol === bucketPosition.col;
+      const key = positionKey(randomRow, randomCol);
 
-    if (!isStart && !isBucket && !blockedCells.includes(key)) {
-      blockedCells.push(key);
+      const isStart =
+        randomRow === playerPosition.row &&
+        randomCol === playerPosition.col;
+
+      const isBucket =
+        randomRow === bucketPosition.row &&
+        randomCol === bucketPosition.col;
+
+      if (!isStart && !isBucket && !blockedCells.includes(key)) {
+        blockedCells.push(key);
+      }
+    }
+
+    if (canSolveLevel()) {
+      validLevelFound = true;
+    }
+
+    attempts++;
+  }
+
+  if (!validLevelFound) {
+    blockedCells = [positionKey(2, 2)];
+  }
+}
+
+// Checks whether the current sliding level is possible to complete
+function canSolveLevel() {
+  const requiredSquares = [];
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const key = positionKey(row, col);
+
+      if (!blockedCells.includes(key) && !isBucket(row, col)) {
+        requiredSquares.push(key);
+      }
     }
   }
+
+  const requiredTotal = requiredSquares.length;
+  const startKey = positionKey(playerPosition.row, playerPosition.col);
+
+  const startState = {
+    row: playerPosition.row,
+    col: playerPosition.col,
+    filled: [startKey]
+  };
+
+  const queue = [startState];
+  const visitedStates = new Set();
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+
+    const stateKey =
+      current.row +
+      "-" +
+      current.col +
+      "-" +
+      current.filled.slice().sort().join(",");
+
+    if (visitedStates.has(stateKey)) {
+      continue;
+    }
+
+    visitedStates.add(stateKey);
+
+    const allFilled = current.filled.length >= requiredTotal;
+    const atBucket = isBucket(current.row, current.col);
+
+    if (allFilled && atBucket) {
+      return true;
+    }
+
+    const directions = ["up", "down", "left", "right"];
+
+    directions.forEach(function(direction) {
+      const nextState = simulateSlide(
+        current.row,
+        current.col,
+        direction,
+        current.filled
+      );
+
+      if (nextState.moved) {
+        queue.push({
+          row: nextState.row,
+          col: nextState.col,
+          filled: nextState.filled
+        });
+      }
+    });
+  }
+
+  return false;
+}
+
+// Simulates one sliding move without changing the real game board
+function simulateSlide(startRow, startCol, direction, currentFilled) {
+  let newRow = startRow;
+  let newCol = startCol;
+  let moved = false;
+  let newFilled = [...currentFilled];
+
+  while (true) {
+    let nextRow = newRow;
+    let nextCol = newCol;
+
+    if (direction === "up") nextRow--;
+    if (direction === "down") nextRow++;
+    if (direction === "left") nextCol--;
+    if (direction === "right") nextCol++;
+
+    const nextKey = positionKey(nextRow, nextCol);
+
+    const insideGrid =
+      nextRow >= 0 &&
+      nextRow < rows &&
+      nextCol >= 0 &&
+      nextCol < cols;
+
+    const blocked = blockedCells.includes(nextKey);
+
+    if (!insideGrid || blocked) {
+      break;
+    }
+
+    newRow = nextRow;
+    newCol = nextCol;
+    moved = true;
+
+    const newKey = positionKey(newRow, newCol);
+
+    if (!newFilled.includes(newKey) && !isBucket(newRow, newCol)) {
+      newFilled.push(newKey);
+    }
+  }
+
+  return {
+    row: newRow,
+    col: newCol,
+    moved: moved,
+    filled: newFilled
+  };
 }
 
 // Draw board
@@ -110,12 +255,22 @@ function drawBoard() {
 
       if (row === bucketPosition.row && col === bucketPosition.col) {
         cell.classList.add("bucket");
-        cell.textContent = "🪣";
+        cell.innerHTML = `
+          <img src="${JERRY_CAN_PATH}" alt="Yellow jerry can finish square" class="bucket-icon">
+        `;
       }
 
       if (row === playerPosition.row && col === playerPosition.col) {
         cell.classList.add("player");
-        cell.textContent = "💧";
+
+        if (row === bucketPosition.row && col === bucketPosition.col) {
+          cell.innerHTML = `
+            <img src="${JERRY_CAN_PATH}" alt="Yellow jerry can finish square" class="bucket-icon">
+            <span class="player-token">💧</span>
+          `;
+        } else {
+          cell.textContent = "💧";
+        }
       }
 
       gameBoard.appendChild(cell);
@@ -125,13 +280,14 @@ function drawBoard() {
 
 // Start game
 function startGame() {
-  if (gameActive) return;
-
-  gameActive = true;
-  nextBtn.style.display = "none";
-  message.textContent = "Game started! Move the water drop.";
+  if (gameActive || changingLevel) {
+    return;
+  }
 
   clearInterval(timer);
+
+  gameActive = true;
+  message.textContent = "Game started! Move the water drop.";
 
   timer = setInterval(() => {
     timeLeft--;
@@ -143,23 +299,50 @@ function startGame() {
   }, 1000);
 }
 
-// Move player
+// Move player - slides until hitting a barrier
 function movePlayer(direction) {
   if (!gameActive) {
     message.textContent = "Press Start Game first!";
     return;
   }
 
+  if (changingLevel) {
+    return;
+  }
+
   let newRow = playerPosition.row;
   let newCol = playerPosition.col;
+  let canMove = false;
+  let cellsFilled = 0;
 
-  if (direction === "up") newRow--;
-  if (direction === "down") newRow++;
-  if (direction === "left") newCol--;
-  if (direction === "right") newCol++;
+  while (true) {
+    let nextRow = newRow;
+    let nextCol = newCol;
 
-  if (!isValidMove(newRow, newCol)) {
-    message.textContent = "You can't move there!";
+    if (direction === "up") nextRow--;
+    if (direction === "down") nextRow++;
+    if (direction === "left") nextCol--;
+    if (direction === "right") nextCol++;
+
+    if (!isValidMove(nextRow, nextCol)) {
+      break;
+    }
+
+    newRow = nextRow;
+    newCol = nextCol;
+    canMove = true;
+
+    const key = positionKey(newRow, newCol);
+
+    if (!filledCells.includes(key) && !isBucket(newRow, newCol)) {
+      filledCells.push(key);
+      score += 5;
+      cellsFilled++;
+    }
+  }
+
+  if (!canMove) {
+    message.textContent = "You can't move in that direction!";
     return;
   }
 
@@ -167,14 +350,10 @@ function movePlayer(direction) {
   playerPosition.col = newCol;
   moves++;
 
-  const key = positionKey(newRow, newCol);
-
-  if (!filledCells.includes(key) && !isBucket(newRow, newCol)) {
-    filledCells.push(key);
-    score += 5;
-    message.textContent = "Square filled! +5 points";
+  if (cellsFilled > 0) {
+    message.textContent = `Water moved across the community! +${cellsFilled * 5} points`;
   } else {
-    message.textContent = "Keep going!";
+    message.textContent = "Keep going! Fill every square before finishing.";
   }
 
   checkBucket();
@@ -192,7 +371,7 @@ function isValidMove(row, col) {
   return insideGrid && !isBlocked;
 }
 
-// Check if player reached bucket
+// Check if player reached final jerry can
 function checkBucket() {
   if (!isBucket(playerPosition.row, playerPosition.col)) {
     return;
@@ -201,7 +380,8 @@ function checkBucket() {
   if (allSquaresFilled()) {
     winLevel();
   } else {
-    message.textContent = "Fill all squares before reaching the bucket!";
+    message.textContent =
+      "Fill all squares before reaching the yellow jerry can!";
   }
 }
 
@@ -225,6 +405,7 @@ function allSquaresFilled() {
 // Win level
 function winLevel() {
   gameActive = false;
+  changingLevel = true;
   clearInterval(timer);
 
   const timeBonus = timeLeft * 10;
@@ -233,12 +414,21 @@ function winLevel() {
 
   score += Math.max(levelBonus + timeBonus - movePenalty, 25);
 
-  message.textContent = "Level Complete! You delivered clean water!";
-  nextBtn.style.display = "inline-block";
+  message.textContent =
+    "Level Complete! You helped deliver clean water with fewer wasted moves!";
 
   updateDisplay();
   drawBoard();
   showCelebration();
+
+  setTimeout(() => {
+    level++;
+    moves = 0;
+    gameActive = false;
+    changingLevel = false;
+    createLevel();
+    message.textContent = "New level created! Press Start Game to begin.";
+  }, 1800);
 }
 
 // Lose life
@@ -250,40 +440,40 @@ function loseLife() {
 
   if (lives > 0) {
     message.textContent = `Time's up! You lost a life. Lives left: ${lives}`;
-    resetCurrentLevel();
+    updateDisplay();
+
+    setTimeout(() => {
+      resetCurrentLevel();
+    }, 1200);
   } else {
     message.textContent = "Game over! You ran out of lives.";
-    fullReset();
-  }
+    updateDisplay();
 
-  updateDisplay();
+    setTimeout(() => {
+      fullReset();
+    }, 1500);
+  }
 }
 
 // Reset current level after losing life
 function resetCurrentLevel() {
-  setTimeout(() => {
-    moves = 0;
-    createLevel();
-  }, 1200);
+  moves = 0;
+  gameActive = false;
+  changingLevel = false;
+  createLevel();
+  message.textContent = "Life lost. Try this route again!";
 }
 
 // Full reset after losing all lives
 function fullReset() {
-  setTimeout(() => {
-    level = 1;
-    score = 0;
-    moves = 0;
-    lives = 3;
-    createLevel();
-  }, 1500);
-}
-
-// Next level
-function nextLevel() {
-  level++;
+  level = 1;
+  score = 0;
   moves = 0;
+  lives = 3;
+  gameActive = false;
+  changingLevel = false;
   createLevel();
-  nextBtn.style.display = "none";
+  message.textContent = "Game restarted. Press Start Game to play again.";
 }
 
 // Manual reset
@@ -295,9 +485,11 @@ function resetGame() {
   moves = 0;
   lives = 3;
   gameActive = false;
+  changingLevel = false;
+
+  celebration.classList.add("hidden");
 
   createLevel();
-  nextBtn.style.display = "none";
   message.textContent = "Game reset. Press Start Game to play again.";
 }
 
@@ -349,7 +541,6 @@ document.addEventListener("keydown", function(event) {
 // Button controls
 startBtn.addEventListener("click", startGame);
 resetBtn.addEventListener("click", resetGame);
-nextBtn.addEventListener("click", nextLevel);
 
 upBtn.addEventListener("click", () => movePlayer("up"));
 downBtn.addEventListener("click", () => movePlayer("down"));
