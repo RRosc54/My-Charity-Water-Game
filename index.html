@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Water Collector</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="game-page">
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <h1>Water Collector</h1>
+
+      <div class="brand">
+        <span class="jerry-icon">▣</span>
+        <span>charity: water</span>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <section class="stats">
+      <div class="stat-box">
+        <span>Level</span>
+        <strong id="levelDisplay">1</strong>
+      </div>
+
+      <div class="stat-box timer-box">
+        <span>Timer</span>
+        <strong id="timerDisplay">30</strong>
+      </div>
+
+      <div class="stat-box">
+        <span>Moves</span>
+        <strong id="movesDisplay">0</strong>
+      </div>
+
+      <div class="stat-box">
+        <span>Score</span>
+        <strong id="scoreDisplay">0</strong>
+      </div>
+
+      <div class="stat-box">
+        <span>Lives</span>
+        <strong id="livesDisplay">💧💧💧</strong>
+      </div>
+    </section>
+
+    <!-- Message Area -->
+    <p id="message" class="message">
+      Fill every square, then reach the bucket!
+    </p>
+
+    <!-- Game Board Area -->
+    <section class="game-area">
+      <div id="gameBoard" class="game-board"></div>
+    </section>
+
+    <!-- Mobile Controls -->
+    <section class="controls">
+      <button id="upBtn">↑</button>
+
+      <div class="middle-controls">
+        <button id="leftBtn">←</button>
+        <button id="downBtn">↓</button>
+        <button id="rightBtn">→</button>
+      </div>
+    </section>
+
+    <!-- Game Buttons -->
+    <section class="game-buttons">
+      <button id="startBtn">Start Game</button>
+      <button id="resetBtn">Reset</button>
+      <button id="nextBtn">Next Level</button>
+    </section>
+
+  </main>
+
+  <!-- Win Celebration -->
+  <div id="celebration" class="celebration hidden">
+    🎉 Level Complete! 🎉
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

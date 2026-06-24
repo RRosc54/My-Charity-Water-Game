@@ -1,0 +1,283 @@
+/* Base Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f8f7f1;
+  color: #222;
+}
+
+/* Page Layout */
+.game-page {
+  width: min(1100px, 95%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Top Bar */
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.top-bar h1 {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(1rem, 2.5vw, 1.8rem);
+  letter-spacing: 3px;
+  font-weight: bold;
+}
+
+.jerry-icon {
+  color: #ffc907;
+  font-size: 1.4em;
+}
+
+/* Stats */
+.stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-box {
+  background: white;
+  border: 2px solid #222;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 3px 3px 0 #ffc907;
+}
+
+.stat-box span {
+  display: block;
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.stat-box strong {
+  font-size: 1.2rem;
+}
+
+.timer-box {
+  background: #ffc907;
+}
+
+/* Message */
+.message {
+  min-height: 30px;
+  margin: 10px 0 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Game Area */
+.game-area {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-board {
+  display: grid;
+  gap: 4px;
+  background: #222;
+  padding: 4px;
+  border: 4px solid #222;
+  border-radius: 8px;
+  box-shadow: 8px 8px 0 #ffc907;
+}
+
+/* Grid Cells */
+.cell {
+  width: 70px;
+  height: 70px;
+  background: white;
+  border: 1px solid #ddd;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  transition: 0.2s ease;
+}
+
+.cell.filled {
+  background: #77c8e8;
+}
+
+.cell.blocked {
+  background: #333;
+  color: white;
+}
+
+.cell.player {
+  background: #b9e8f7;
+  animation: pop 0.2s ease;
+}
+
+.cell.bucket {
+  background: #ffc907;
+}
+
+.cell.player.bucket {
+  background: linear-gradient(135deg, #b9e8f7 50%, #ffc907 50%);
+}
+
+/* Buttons */
+.controls {
+  margin-top: 24px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.middle-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.controls button,
+.game-buttons button {
+  border: 2px solid #222;
+  background: #ffc907;
+  color: #222;
+  padding: 12px 18px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #222;
+  transition: 0.2s ease;
+}
+
+.controls button:hover,
+.game-buttons button:hover {
+  transform: translateY(-2px);
+}
+
+.game-buttons {
+  margin-top: 22px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#nextBtn {
+  display: none;
+}
+
+/* Celebration */
+.celebration {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 201, 7, 0.95);
+  display: grid;
+  place-items: center;
+  font-size: clamp(2rem, 7vw, 5rem);
+  font-weight: bold;
+  text-align: center;
+  z-index: 1000;
+  animation: celebrate 1s ease infinite alternate;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Animations */
+@keyframes pop {
+  0% {
+    transform: scale(0.85);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes celebrate {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* Tablet */
+@media (max-width: 850px) {
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cell {
+    width: 60px;
+    height: 60px;
+    font-size: 1.7rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .game-page {
+    padding: 16px;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .brand {
+    letter-spacing: 2px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cell {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .controls {
+    display: flex;
+  }
+}
+
+/* Very Small Phones */
+@media (max-width: 380px) {
+  .cell {
+    width: 38px;
+    height: 38px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
